@@ -1,0 +1,34 @@
+body {
+  margin: 0;
+}
+
+canvas {
+  /* border: 1px solid black; */
+  width: 100%;
+  height: 100%;
+}
+
+.floating {
+  cursor: pointer;
+  position:fixed;
+	width:100px;
+	height:60px;
+	left:40px;
+	background-color:#0C9;
+	color:#FFF;
+	border-radius:50px;
+	text-align:center;
+	box-shadow: 2px 2px 3px #999;
+}
+
+.one {
+	top:40px;
+}
+
+.two {
+	top:110px;
+}
+
+.three {
+	top:190px;
+}
