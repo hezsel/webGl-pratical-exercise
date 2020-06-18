@@ -70,3 +70,5 @@ const shapes = {
     1.0,-1.0,1.0,
   ]
 }
+
+export default shapes

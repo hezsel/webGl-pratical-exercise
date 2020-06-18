@@ -1,44 +1,44 @@
-const canvas = document.querySelector('canvas')
-canvas.width  = window.innerWidth
-canvas.height = window.innerHeight
+import shapes from './shapes.js'
+import {
+  createShader,
+  createBuffer,
+  bindBuffer,
+  createProgram,
+  saveUniform,
+} from './utils/webGl.js'
+import {
+  newMat4,
+  rotateX,
+  rotateY,
+  scale,
+  translate,
+  createProjectionMatrix,
+  multiply,
+} from './utils/matrix.js'
+import {
+  generateColorArray,
+  resizeCanvasToFullscreen,
+} from './utils/others.js'
+import {
+  vertexShaderSource,
+  fragmentShaderSource,
+} from './shaders/index.js'
 
+const canvas = document.getElementById('canvas')
+resizeCanvasToFullscreen(canvas)
 const gl = canvas.getContext('webgl')
 if (!gl) throw new Error('WebGL not supported')
 
-const vertexShader = gl.createShader(gl.VERTEX_SHADER)
-gl.shaderSource(vertexShader, `
-  precision mediump float;
-
-  attribute vec3 position;
-  attribute vec3 color;
-  varying vec3 vColor;
-
-  uniform mat4 matrix;  
-
-  void main() {
-    vColor = color;
-    gl_Position = matrix * vec4(position, 1);
-  }
-`)
-gl.compileShader(vertexShader)
-
-const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
-gl.shaderSource(fragmentShader, `
-  precision mediump float;
-
-  varying vec3 vColor;
-
-  void main() {
-    gl_FragColor = vec4(vColor, 1);
-  }
-`)
-gl.compileShader(fragmentShader)
-
-let animationFrameId = null
+const vertexShader = createShader(gl, 'VERTEX_SHADER', vertexShaderSource)
+const fragmentShader = createShader(gl, 'FRAGMENT_SHADER', fragmentShaderSource)
 
 const program = createProgram(gl, [fragmentShader, vertexShader])
+
 gl.useProgram(program)
+
 gl.enable(gl.DEPTH_TEST)
+
+let animationFrameId = null
 
 const drawShape = (shapeName, colorName = 'ramdom') => {
   cancelAnimationFrame(animationFrameId)
@@ -50,14 +50,12 @@ const drawShape = (shapeName, colorName = 'ramdom') => {
   const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', vertex)
   const colorBuffer = createBuffer(gl, 'ARRAY_BUFFER', color)
 
-  const positionLocation = bindBuffer(gl, program, 'position', positionBuffer)
-  const colorLocation = bindBuffer(gl, program, 'color', colorBuffer)
+  bindBuffer(gl, program, 'position', positionBuffer)
+  bindBuffer(gl, program, 'color', colorBuffer)
 
   const matrix = newMat4()
 
-  const projectionMatrix = newMat4()
-  mat4.perspective(
-    projectionMatrix,
+  const projectionMatrix = createProjectionMatrix(
     1.25,
     canvas.width/canvas.height,
     1e-4, 
@@ -69,31 +67,38 @@ const drawShape = (shapeName, colorName = 'ramdom') => {
 
   const finalMatrix = newMat4()
 
-  const uniformMatrix = gl.getUniformLocation(program, 'matrix')
+  const uniformMatrixLocation = gl.getUniformLocation(program, 'matrix')
 
   rotateX(matrix, 0.5)
   const animate = () => {
     animationFrameId = requestAnimationFrame(animate)
     rotateY(matrix, 0.02)
-    mat4.multiply(finalMatrix, projectionMatrix, matrix)
-    saveUniform(gl, uniformMatrix, finalMatrix)
+    multiply(finalMatrix, projectionMatrix, matrix)
+    saveUniform(gl, uniformMatrixLocation, finalMatrix)
     gl.drawArrays(gl.TRIANGLES, 0 , vertex.length/3)
   }
   animate()
 
-
   document.addEventListener('keydown', (event) => {
     if(event.keyCode == 37) rotateY(matrix, 0.05)
-    else if(event.keyCode == 39) rotateY(matrix, -0.05)
-    else if(event.keyCode == 40) rotateX(matrix, 0.05)
-    else if(event.keyCode == 38) rotateX(matrix, -0.05)
-    else if(event.keyCode == 27) cancelAnimationFrame(animationFrameId)
+    if(event.keyCode == 39) rotateY(matrix, -0.05)
+    if(event.keyCode == 40) rotateX(matrix, 0.05)
+    if(event.keyCode == 38) rotateX(matrix, -0.05)
+    if(event.keyCode == 13) {
+      if (animationFrameId === null ) animate()
+    }
+    if(event.keyCode == 27) {
+      cancelAnimationFrame(animationFrameId)
+      animationFrameId = null
+    }
   })
 
   document.addEventListener('wheel', (event) => {
     if (event.deltaY > 0) scale(matrix, [1.1, 1.1, 1.1])
-    else if (event.deltaY < 0) scale(matrix, [0.9, 0.9, 0.9])
+    if (event.deltaY < 0) scale(matrix, [0.9, 0.9, 0.9])
   })
 }
 
 drawShape('pyramid')
+
+window.drawShape = drawShape
