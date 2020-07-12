@@ -1,4 +1,3 @@
-export default `
 precision mediump float;
 
 const vec3 lightDirection = normalize(vec3(0, 1, 0));
@@ -23,4 +22,3 @@ void main() {
 
   gl_Position = matrix * vec4(position, 1);
 }
-`

@@ -1,4 +1,3 @@
-import shapes from './shapes.js'
 import {
   createShader,
   createBuffer,
@@ -18,37 +17,61 @@ import {
 import {
   generateColorArray,
   resizeCanvasToFullscreen,
+  loadResource,
+  getDefaultModels,
 } from './utils/others.js'
-import {
-  vertexShaderSource,
-  fragmentShaderSource,
-} from './shaders/index.js'
 
 const canvas = document.getElementById('canvas')
 resizeCanvasToFullscreen(canvas)
 const gl = canvas.getContext('webgl')
 if (!gl) throw new Error('WebGL not supported')
 
-const vertexShader = createShader(gl, 'VERTEX_SHADER', vertexShaderSource)
-const fragmentShader = createShader(gl, 'FRAGMENT_SHADER', fragmentShaderSource)
-
-const program = createProgram(gl, [fragmentShader, vertexShader])
-
-gl.useProgram(program)
-
-gl.enable(gl.DEPTH_TEST)
-
 let animationFrameId = null
 
-const drawShape = (shapeName, colorName = 'ramdom') => {
+let models = {}
+
+const loadModels = (modelsToLoad) => {
+  models = {
+    ...models,
+    ...modelsToLoad,
+  }
+}
+
+const loadShaders = async () => {
+  const vertexShaderSource = await loadResource('text', 'assets/shaders/vertex.glsl')
+  const fragmentShaderSource = await loadResource('text', 'assets/shaders/fragment.glsl')
+
+  const vertexShader = createShader(gl, 'VERTEX_SHADER', vertexShaderSource)
+  const fragmentShader = createShader(gl, 'FRAGMENT_SHADER', fragmentShaderSource)
+
+  return {
+    vertexShader,
+    fragmentShader,
+  }
+}
+
+const loadProgram = async () => {
+  const { vertexShader, fragmentShader } = await loadShaders()
+
+  const program = createProgram(gl, [fragmentShader, vertexShader])
+  gl.useProgram(program)
+  gl.enable(gl.DEPTH_TEST)
+
+  await getDefaultModels().then(loadModels)
+
+  window.drawModel = drawModel(program)
+  window.drawModel('cube', { automaticRotation: true })
+}
+
+const drawModel = (program) => (modelName, { colorName, automaticRotation = true } = {}) => {
   cancelAnimationFrame(animationFrameId)
 
-  const { shape, normal } = shapes[shapeName]
-  const color = generateColorArray(shape.length, 3, colorName)
+  const { vertices, normals } = models[modelName]
+  const color = generateColorArray(vertices.length, 3, colorName)
 
-  const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', shape)
+  const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', vertices)
   const colorBuffer = createBuffer(gl, 'ARRAY_BUFFER', color)
-  const normalBuffer = createBuffer(gl, 'ARRAY_BUFFER', normal)
+  const normalBuffer = createBuffer(gl, 'ARRAY_BUFFER', normals)
 
   bindBuffer(gl, program, 'position', positionBuffer)
   bindBuffer(gl, program, 'color', colorBuffer)
@@ -63,8 +86,8 @@ const drawShape = (shapeName, colorName = 'ramdom') => {
   )
   const normalMatrix = newMat4()
   const viewMatrix = newMat4()
-  const ovMatrix = newMat4()
-  const ovpMatrix = newMat4()
+  const mvMatrix = newMat4()
+  const mvpMatrix = newMat4()
 
   const uniformMatrixLocation = gl.getUniformLocation(program, 'matrix')
   const uniformNormalLocation = gl.getUniformLocation(program, 'normalMatrix')
@@ -74,20 +97,21 @@ const drawShape = (shapeName, colorName = 'ramdom') => {
 
   const draw = () => {
     animationFrameId = requestAnimationFrame(draw)
+    if (automaticRotation) {
+      rotateX(objectMatrix, 0.01)
+      rotateY(objectMatrix, 0.01)
+    }
 
-    rotateX(objectMatrix, 0.01)
-    rotateY(objectMatrix, 0.01)
+    multiply(mvMatrix, viewMatrix, objectMatrix)
+    multiply(mvpMatrix, projectionMatrix, mvMatrix)
 
-    multiply(ovMatrix, viewMatrix, objectMatrix)
-    multiply(ovpMatrix, projectionMatrix, ovMatrix)
-
-    mat4.invert(normalMatrix, ovMatrix)
+    mat4.invert(normalMatrix, mvMatrix)
     mat4.transpose(normalMatrix, normalMatrix)
 
-    saveUniform(gl, uniformMatrixLocation, ovpMatrix)
+    saveUniform(gl, uniformMatrixLocation, mvpMatrix)
     saveUniform(gl, uniformNormalLocation, normalMatrix)
   
-    gl.drawArrays(gl.TRIANGLES, 0 , shape.length/3)
+    gl.drawArrays(gl.TRIANGLES, 0, vertices.length/3)
   }
   draw()
 
@@ -114,7 +138,7 @@ const drawShape = (shapeName, colorName = 'ramdom') => {
     if(event.keyCode == 69) translate(viewMatrix, [0, -0.1, 0])
 
     if(event.keyCode == 13) {
-      if (animationFrameId === null ) animate()
+      if (animationFrameId === null ) draw()
     }
     if(event.keyCode == 27) {
       cancelAnimationFrame(animationFrameId)
@@ -128,6 +152,4 @@ const drawShape = (shapeName, colorName = 'ramdom') => {
   })
 }
 
-drawShape('cube')
-
-window.drawShape = drawShape
+loadProgram()
