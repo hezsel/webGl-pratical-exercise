@@ -24,19 +24,26 @@
           </div>
         </li>
         <li>
-          <a>Color</a>
+          <a>Properties</a>
           <div class="uk-navbar-dropdown">
             <ul class="uk-nav uk-navbar-dropdown-nav">
+              <li class="uk-nav-header">Color</li>
+              <li><a id="current-color"></a></li>
               <li><input
                 id="color-picker"
                 type="color"
                 onchange="setConfig({ color: this.value }, true)"
+                uk-tooltip="color picker"
               /></li>
-              <li><a onclick="setConfig({ color: null }, true)">ramdom Color</a></li>
+              <li><a onclick="setConfig({ color: null }, true)">random color</a></li>
               <li class="uk-nav-divider"></li>
               <li><a onclick="setConfig({ color: '#ff0000' }, true)">red</a></li>
               <li><a onclick="setConfig({ color: '#00ff00' }, true)">green</a></li>
               <li><a onclick="setConfig({ color: '#0000ff' }, true)">blue</a></li>
+              <li class="uk-nav-divider"></li>
+              <li class="uk-nav-header">Scale</li>
+              <li><a onclick="setConfig({ scaleChange: -1 })">shrink</a></li>
+              <li><a onclick="setConfig({ scaleChange: 1 })">expand</a></li>
             </ul>
           </div>
         </li>
@@ -47,34 +54,71 @@
               <li><a onclick="setConfig({ automaticRotation: true })">play</a></li>
               <li><a onclick="setConfig({ automaticRotation: false })">pause</a></li>
               <li><a
-                onclick="setConfig({ automaticRotation: true, rotation: { x: 0.01, y: 0.01, z: 0 } })"
+                uk-tooltip="reset to default speed"
+                onclick="setConfig({ automaticRotation: true, rotation: { x: 1, y: 1, z: 0 } })"
               >
                 reset animation
               </a></li>
               <li class="uk-nav-divider"></li>
               <li>
                 <div class="uk-child-width-expand@s uk-text-center" uk-grid>
-                  <div><a onclick="setConfig({ rotationAdd: ['x' , -0.005] })">- x</a></div>
-                  <div><a onclick="setConfig({ rotationAdd: ['x' , 0.005] })">+ x</a></div>
+                  <div class="uk-margin">
+                    <a id="x-rotation" onclick="setConfig({ rotationChange: ['x', 0] })">x</a>
+                    <input
+                      id="x-rotation-range"
+                      class="uk-range uk-margin-small-top"
+                      type="range"
+                      value="0"
+                      min="-10"
+                      max="10"
+                      step="1"
+                      onchange="setConfig({ rotationChange: ['x', this.value] })"
+                    >
+                  </div>
                 </div>
               </li>
               <li>
                 <div class="uk-child-width-expand@s uk-text-center" uk-grid>
-                  <div><a onclick="setConfig({ rotationAdd: ['y' , -0.005] })">- y</a></div>
-                  <div><a onclick="setConfig({ rotationAdd: ['y' , 0.005] })">+ y</a></div>
+                  <div class="uk-margin">
+                    <a id="y-rotation" onclick="setConfig({ rotationChange: ['y', 0] })">y</a>
+                    <input
+                      id="y-rotation-range"
+                      class="uk-range uk-margin-small-top"
+                      type="range"
+                      value="0"
+                      min="-10"
+                      max="10"
+                      step="1"
+                      onchange="setConfig({ rotationChange: ['y', this.value] })"
+                    >
+                  </div>
                 </div>
               </li>
               <li>
                 <div class="uk-child-width-expand@s uk-text-center" uk-grid>
-                  <div><a onclick="setConfig({ rotationAdd: ['z' , -0.005] })">- z</a></div>
-                  <div><a onclick="setConfig({ rotationAdd: ['z' , 0.005] })">+ z</a></div>
+                  <div class="uk-margin">
+                    <a id="z-rotation" onclick="setConfig({ rotationChange: ['z', 0] })">z</a>
+                    <input
+                      id="z-rotation-range"
+                      class="uk-range uk-margin-small-top"
+                      type="range"
+                      value="0"
+                      min="-10"
+                      max="10"
+                      step="1"
+                      onchange="setConfig({ rotationChange: ['z', this.value] })"
+                    >
+                  </div>
                 </div>
               </li>
             </ul>
           </div>
         </li>
         <li>
-          <a onclick="setConfig({ resetPosition: true })">Reset Position</a>
+          <a
+            uk-tooltip="reset model and view position"
+            onclick="setConfig({ resetPosition: true })"
+          > Reset Position</a>
         </li>
       </ul>
     </div>

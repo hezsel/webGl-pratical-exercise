@@ -28,6 +28,13 @@ const gl = canvas.getContext('webgl')
 if (!gl) throw new Error('WebGL not supported')
 
 const colorPicker = document.getElementById('color-picker')
+const currentColor = document.getElementById('current-color')
+const xRotation = document.getElementById('x-rotation')
+const yRotation = document.getElementById('y-rotation')
+const zRotation = document.getElementById('z-rotation')
+const xRotationRange = document.getElementById('x-rotation-range')
+const yRotationRange = document.getElementById('y-rotation-range')
+const zRotationRange = document.getElementById('z-rotation-range')
 
 let animationFrameId = null
 
@@ -56,22 +63,47 @@ const loadShaders = async () => {
 }
 
 let objectMatrix = newMat4()
-scale(objectMatrix, [0.25, 0.25, 0.25])
+
+const updateUiValues = ({ rotation, color, scale }) => {
+  colorPicker.value = color
+  currentColor.innerText = color
+  xRotation.innerText = `${rotation.x} x`
+  yRotation.innerText = `${rotation.y} y`
+  zRotation.innerText = `${rotation.z} z`
+  xRotationRange.value = rotation.x
+  yRotationRange.value = rotation.y
+  zRotationRange.value = rotation.z
+}
+
+const changeScale = (scaleValue) => {
+  const modifier = (1 + (scaleValue/10))
+  scale(objectMatrix, modifier)
+  configs.scale = scaleValue
+}
+
 
 const setConfig = (newConfigs, reload = false) => {
   configs = {
     ...configs,
     ...newConfigs,
   }
-
-  const rotationAdd = newConfigs.rotationAdd
-  if (rotationAdd) {
-    configs.rotation[rotationAdd[0]] += rotationAdd[1]
+  if (newConfigs.color === null) {
+    configs.color = getRandomColor()
   }
+  if (newConfigs.scaleChange) {
+    changeScale(newConfigs.scaleChange)
+  }
+
+  const rotationChange = newConfigs.rotationChange
+  if (rotationChange) {
+    configs.rotation[rotationChange[0]] = rotationChange[1]
+  }
+
+  updateUiValues(configs)
 
   if (newConfigs.resetPosition) {
     objectMatrix = newMat4()
-    scale(objectMatrix, [0.25, 0.25, 0.25])
+    changeScale(-7.5)
   }
 
   if (reload) {
@@ -95,9 +127,10 @@ const loadProgram = async () => {
     model: 'cube',
     color: null,
     automaticRotation: true,
+    resetPosition: true,
     rotation: {
-      x: 0.01,
-      y: 0.01,
+      x: 1,
+      y: 1,
       z: 0,
     },
   })
@@ -110,10 +143,7 @@ const drawModel = (program) => () => {
 
   const { vertices, normals } = models[configs.model]
 
-  const colorHex = configs.color || getRandomColor()
-  const color = generateColorArray(vertices.length, 3, colorHex)
-
-  colorPicker.value = colorHex
+  const color = generateColorArray(vertices.length, 3, configs.color)
 
   const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', vertices)
   const colorBuffer = createBuffer(gl, 'ARRAY_BUFFER', color)
@@ -142,9 +172,9 @@ const drawModel = (program) => () => {
   const draw = () => {
     animationFrameId = requestAnimationFrame(draw)
     if (configs.automaticRotation) {
-      rotateX(objectMatrix, configs.rotation.x)
-      rotateY(objectMatrix, configs.rotation.y)
-      rotateX(objectMatrix, configs.rotation.z)
+      rotateX(objectMatrix, configs.rotation.x / 100)
+      rotateY(objectMatrix, configs.rotation.y / 100)
+      rotateX(objectMatrix, configs.rotation.z / 100)
     }
 
     multiply(mvMatrix, viewMatrix, objectMatrix)
@@ -196,8 +226,8 @@ const drawModel = (program) => () => {
   })
 
   document.addEventListener('wheel', (event) => {
-    if (event.deltaY > 0) scale(objectMatrix, [1.1, 1.1, 1.1])
-    if (event.deltaY < 0) scale(objectMatrix, [0.9, 0.9, 0.9])
+    if (event.deltaY > 0) changeScale(0.5)
+    if (event.deltaY < 0) changeScale(- 0.5)
   })
 }
 

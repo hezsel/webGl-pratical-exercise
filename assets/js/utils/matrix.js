@@ -17,7 +17,7 @@ export const rotateZ = (matrixToRotate, value) => {
 }
 
 export const scale = (matrixToScale, value) => {
-  mat4.scale(matrixToScale, matrixToScale, value)
+  mat4.scale(matrixToScale, matrixToScale, [value, value, value])
 }
 
 export const translate = (matrixToTranslate, value) => {
