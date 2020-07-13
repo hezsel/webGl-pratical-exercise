@@ -13,13 +13,21 @@
         <li>
           <a>Model</a>
           <div class="uk-navbar-dropdown">
-            <ul class="uk-nav uk-navbar-dropdown-nav">
-              <li><a>add model (wip)</a></li>
+            <ul id="model-list" class="uk-nav uk-navbar-dropdown-nav">
+              <li>
+                <input
+                id="file"
+                name="file"
+                class="inputfile"
+                type="file"
+                accept=".obj"
+                />
+                <label
+                  for="file"
+                  uk-tooltip="must be a triangle mesh with normals"
+                >add model .obj</label>
+              </li>
               <li class="uk-nav-divider"></li>
-              <li><a onclick="setConfig({ model: 'cube' }, true)">cube</a></li>
-              <li><a onclick="setConfig({ model: 'sphere' }, true)">sphere</a></li>
-              <li><a onclick="setConfig({ model: 'cylinder' }, true)">cylinder</a></li>
-              <li><a onclick="setConfig({ model: 'cone' }, true)">cone</a></li>              
             </ul>
           </div>
         </li>

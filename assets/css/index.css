@@ -16,7 +16,27 @@ nav {
 div a {
 	color: #999;
 }
+
 div a:hover {
+	color: #666;
+	text-decoration: none;
+}
+
+.inputfile {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+nav label {
+	color: #999;
+	cursor: pointer;
+}
+
+nav label:hover {
 	color: #666;
 	text-decoration: none;
 }

@@ -21,6 +21,7 @@ import {
   getDefaultModels,
   getRandomColor,
 } from './utils/others.js'
+import parseObjFile from './utils/parser.js'
 
 const canvas = document.getElementById('canvas')
 resizeCanvasToFullscreen(canvas)
@@ -36,18 +37,55 @@ const xRotationRange = document.getElementById('x-rotation-range')
 const yRotationRange = document.getElementById('y-rotation-range')
 const zRotationRange = document.getElementById('z-rotation-range')
 
+const modelList = document.getElementById('model-list')
+
 let animationFrameId = null
 
 let models = {}
 
 let configs = {}
 
+const addModelsTolist = (models) => {
+  for (const [name] of Object.entries(models)) {
+    const model = document.createElement('li')
+    const label = document.createElement('a')
+    label.innerText = name
+    model.appendChild(label)
+    model.setAttribute('onclick', `setConfig({ model: "${name}" }, true)`)
+    modelList.appendChild(model)
+  }
+}
+
 const loadModels = (modelsToLoad) => {
   models = {
     ...models,
     ...modelsToLoad,
   }
+
+  addModelsTolist(modelsToLoad)
 }
+
+const addModelFile = (name, data) => {
+  const modelJson = parseObjFile(data)
+  loadModels({
+    [name]: modelJson,
+  })
+  setConfig({ model: name }, true)
+}
+
+document.getElementById('file').addEventListener('change', event => {
+  const file = event.target.files[0]
+  if (!file.name.match(/.*\.obj$/)) {
+    alert('only ".obj" files are accepted')
+    return
+  }
+  const reader = new FileReader()
+  reader.addEventListener('load', event => {
+    const fileName = file.name.replace(/\.obj$/, '')
+    addModelFile(fileName, event.target.result)
+  })
+  reader.readAsText(file)
+})
 
 const loadShaders = async () => {
   const vertexShaderSource = await loadResource('text', 'assets/shaders/vertex.glsl')
@@ -63,8 +101,10 @@ const loadShaders = async () => {
 }
 
 let objectMatrix = newMat4()
+let viewMatrix = newMat4()
+translate(viewMatrix, [0, 0, -1])
 
-const updateUiValues = ({ rotation, color, scale }) => {
+const updateUiValues = ({ rotation, color }) => {
   colorPicker.value = color
   currentColor.innerText = color
   xRotation.innerText = `${rotation.x} x`
@@ -80,7 +120,6 @@ const changeScale = (scaleValue) => {
   scale(objectMatrix, modifier)
   configs.scale = scaleValue
 }
-
 
 const setConfig = (newConfigs, reload = false) => {
   configs = {
@@ -104,6 +143,8 @@ const setConfig = (newConfigs, reload = false) => {
   if (newConfigs.resetPosition) {
     objectMatrix = newMat4()
     changeScale(-7.5)
+    viewMatrix = newMat4()
+    translate(viewMatrix, [0, 0, -1])
   }
 
   if (reload) {
@@ -123,7 +164,7 @@ const loadProgram = async () => {
   window.setConfig = setConfig
   window.drawModel = drawModel(program)
 
-  window.setConfig({    
+  setConfig({    
     model: 'cube',
     color: null,
     automaticRotation: true,
@@ -160,14 +201,11 @@ const drawModel = (program) => () => {
     1e4,
   )
   const normalMatrix = newMat4()
-  const viewMatrix = newMat4()
   const mvMatrix = newMat4()
   const mvpMatrix = newMat4()
 
   const uniformMatrixLocation = gl.getUniformLocation(program, 'matrix')
   const uniformNormalLocation = gl.getUniformLocation(program, 'normalMatrix')
-
-  translate(viewMatrix, [0, 0, -1])
 
   const draw = () => {
     animationFrameId = requestAnimationFrame(draw)
