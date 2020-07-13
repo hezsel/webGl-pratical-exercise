@@ -1,34 +1,22 @@
 body {
 	margin: 0;
 	background-color: #000;
+	max-height: 100vh;
 }
 
 canvas {
   width: 100%;
-  height: 100%;
+	height: 100%;
 }
 
-.floating {
-  cursor: pointer;
-  position:fixed;
-	width:100px;
-	height:60px;
-	left:40px;
-	background-color:#0C9;
-	color:#FFF;
-	border-radius:50px;
-	text-align:center;
-	box-shadow: 2px 2px 3px #999;
+nav {
+	position: absolute !important;
 }
 
-.one {
-	top:40px;
+div a {
+	color: #999;
 }
-
-.two {
-	top:110px;
-}
-
-.three {
-	top:190px;
+div a:hover {
+	color: #666;
+	text-decoration: none;
 }

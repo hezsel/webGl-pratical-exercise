@@ -30,6 +30,8 @@ let animationFrameId = null
 
 let models = {}
 
+let configs = {}
+
 const loadModels = (modelsToLoad) => {
   models = {
     ...models,
@@ -50,6 +52,30 @@ const loadShaders = async () => {
   }
 }
 
+let objectMatrix = newMat4()
+scale(objectMatrix, [0.25, 0.25, 0.25])
+
+const setConfig = (newConfigs, reload = false) => {
+  configs = {
+    ...configs,
+    ...newConfigs,
+  }
+
+  const rotationAdd = newConfigs.rotationAdd
+  if (rotationAdd) {
+    configs.rotation[rotationAdd[0]] += rotationAdd[1]
+  }
+
+  if (newConfigs.resetPosition) {
+    objectMatrix = newMat4()
+    scale(objectMatrix, [0.25, 0.25, 0.25])
+  }
+
+  if (reload) {
+    window.drawModel()
+  }
+}
+
 const loadProgram = async () => {
   const { vertexShader, fragmentShader } = await loadShaders()
 
@@ -59,15 +85,28 @@ const loadProgram = async () => {
 
   await getDefaultModels().then(loadModels)
 
+  window.setConfig = setConfig
   window.drawModel = drawModel(program)
-  window.drawModel('cube', { automaticRotation: true })
+
+  window.setConfig({    
+    model: 'cube',
+    color: 'ramdom',
+    automaticRotation: true,
+    rotation: {
+      x: 0.01,
+      y: 0.01,
+      z: 0,
+    },
+  })
+
+  window.drawModel()
 }
 
-const drawModel = (program) => (modelName, { colorName, automaticRotation = true } = {}) => {
+const drawModel = (program) => () => {
   cancelAnimationFrame(animationFrameId)
 
-  const { vertices, normals } = models[modelName]
-  const color = generateColorArray(vertices.length, 3, colorName)
+  const { vertices, normals } = models[configs.model]
+  const color = generateColorArray(vertices.length, 3, configs.color)
 
   const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', vertices)
   const colorBuffer = createBuffer(gl, 'ARRAY_BUFFER', color)
@@ -77,7 +116,6 @@ const drawModel = (program) => (modelName, { colorName, automaticRotation = true
   bindBuffer(gl, program, 'color', colorBuffer)
   bindBuffer(gl, program, 'normal', normalBuffer)
 
-  const objectMatrix = newMat4()
   const projectionMatrix = createProjectionMatrix(
     1.25,
     canvas.width/canvas.height,
@@ -92,14 +130,14 @@ const drawModel = (program) => (modelName, { colorName, automaticRotation = true
   const uniformMatrixLocation = gl.getUniformLocation(program, 'matrix')
   const uniformNormalLocation = gl.getUniformLocation(program, 'normalMatrix')
 
-  scale(objectMatrix, [0.25, 0.25, 0.25])
   translate(viewMatrix, [0, 0, -1])
 
   const draw = () => {
     animationFrameId = requestAnimationFrame(draw)
-    if (automaticRotation) {
-      rotateX(objectMatrix, 0.01)
-      rotateY(objectMatrix, 0.01)
+    if (configs.automaticRotation) {
+      rotateX(objectMatrix, configs.rotation.x)
+      rotateY(objectMatrix, configs.rotation.y)
+      rotateX(objectMatrix, configs.rotation.z)
     }
 
     multiply(mvMatrix, viewMatrix, objectMatrix)
@@ -136,6 +174,10 @@ const drawModel = (program) => (modelName, { colorName, automaticRotation = true
     if(event.keyCode == 83) translate(viewMatrix, [0, 0, 0.1])
     if(event.keyCode == 81) translate(viewMatrix, [0, 0.1, 0])
     if(event.keyCode == 69) translate(viewMatrix, [0, -0.1, 0])
+
+    if(event.keyCode == 32) {
+      setConfig({ automaticRotation: !configs.automaticRotation })
+    }
 
     if(event.keyCode == 13) {
       if (animationFrameId === null ) draw()
