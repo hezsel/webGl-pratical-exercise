@@ -19,12 +19,15 @@ import {
   resizeCanvasToFullscreen,
   loadResource,
   getDefaultModels,
+  getRandomColor,
 } from './utils/others.js'
 
 const canvas = document.getElementById('canvas')
 resizeCanvasToFullscreen(canvas)
 const gl = canvas.getContext('webgl')
 if (!gl) throw new Error('WebGL not supported')
+
+const colorPicker = document.getElementById('color-picker')
 
 let animationFrameId = null
 
@@ -90,7 +93,7 @@ const loadProgram = async () => {
 
   window.setConfig({    
     model: 'cube',
-    color: 'ramdom',
+    color: null,
     automaticRotation: true,
     rotation: {
       x: 0.01,
@@ -106,7 +109,11 @@ const drawModel = (program) => () => {
   cancelAnimationFrame(animationFrameId)
 
   const { vertices, normals } = models[configs.model]
-  const color = generateColorArray(vertices.length, 3, configs.color)
+
+  const colorHex = configs.color || getRandomColor()
+  const color = generateColorArray(vertices.length, 3, colorHex)
+
+  colorPicker.value = colorHex
 
   const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', vertices)
   const colorBuffer = createBuffer(gl, 'ARRAY_BUFFER', color)

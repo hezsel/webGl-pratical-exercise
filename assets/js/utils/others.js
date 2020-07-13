@@ -1,4 +1,4 @@
-const getRamdomColor = () => [Math.random(), Math.random(), Math.random()]
+export const getRandomColor = () => '#000000'.replace(/0/g,() => (~~(Math.random()*16)).toString(16))
 
 const convertHexToRGB = (hex) => {
   hex = hex.replace('#','');
@@ -9,11 +9,9 @@ const convertHexToRGB = (hex) => {
   return [r/255, g/255, b/255]
 }
 
-export const generateColorArray = (arrayLength, vertexLength, color = 'ramdom') => {
+export const generateColorArray = (arrayLength, vertexLength, color) => {
   const colorArray = []
-  let colorRGB = []
-  if (color === 'ramdom') colorRGB = getRamdomColor()
-  else colorRGB = convertHexToRGB(color)
+  const colorRGB = convertHexToRGB(color)
   for (let i = 0; i < arrayLength/vertexLength; i++) colorArray.push(...colorRGB)
 
   return colorArray

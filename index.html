@@ -27,12 +27,16 @@
           <a>Color</a>
           <div class="uk-navbar-dropdown">
             <ul class="uk-nav uk-navbar-dropdown-nav">
-              <li><a onclick="setConfig({ color: 'ramdom' }, true)">ramdom Color</a></li>
-              <li><a>color picker (wip)</a></li>
+              <li><input
+                id="color-picker"
+                type="color"
+                onchange="setConfig({ color: this.value }, true)"
+              /></li>
+              <li><a onclick="setConfig({ color: null }, true)">ramdom Color</a></li>
               <li class="uk-nav-divider"></li>
-              <li><a onclick="setConfig({ color: 'FF0000' }, true)">red</a></li>
-              <li><a onclick="setConfig({ color: '00FF00' }, true)">green</a></li>
-              <li><a onclick="setConfig({ color: '0000FF' }, true)">blue</a></li>
+              <li><a onclick="setConfig({ color: '#ff0000' }, true)">red</a></li>
+              <li><a onclick="setConfig({ color: '#00ff00' }, true)">green</a></li>
+              <li><a onclick="setConfig({ color: '#0000ff' }, true)">blue</a></li>
             </ul>
           </div>
         </li>
