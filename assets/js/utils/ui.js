@@ -76,4 +76,26 @@ export const addListeners = (
     if (event.deltaY > 0) changeScale(0.5)
     if (event.deltaY < 0) changeScale(- 0.5)
   })
+  let isDraging = false
+  const position = {
+    x: 0,
+    y: 0,
+  }
+  document.addEventListener('mousedown', ({ clientX, clientY }) => {
+    isDraging = true
+    position.x = clientX
+    position.y = clientY
+  })
+  document.addEventListener('mousemove', ({ clientX, clientY }) => {
+    if (isDraging) {
+      const movement = {
+        y: (clientX - position.x) / (window.innerWidth / 0.25),
+        x: (clientY - position.y) / (window.innerHeight / 0.25),
+      }
+      setConfig({ angles: movement })
+    }
+  })
+  document.addEventListener('mouseup', () => {
+    isDraging = false
+  })
 }

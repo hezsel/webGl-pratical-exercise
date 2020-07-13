@@ -33,8 +33,12 @@ const gl = initializeCanvas()
 let animationFrameId = null
 window.models = {}
 let configs = {}
-let modelMatrix = newMat4()
-let viewMatrix = newMat4()
+const modelMatrix = newMat4()
+const viewMatrix = newMat4()
+const rotationMatrixes = {
+  x: mat4.identity(newMat4()),
+  y: mat4.identity(newMat4()),
+}
 translate(viewMatrix, [0, 0, -1])
 
 const loadShaders = async () => {
@@ -72,6 +76,10 @@ const loadProgram = async () => {
       y: 0,
       z: 1,
     },
+    angles: {
+      x: 0,
+      y: 0,
+    }
   })
 
   window.drawModel()
@@ -84,6 +92,10 @@ const changeScale = (scaleValue) => {
 }
 
 const setConfig = (newConfigs, reload = false) => {
+  if (newConfigs.angles && configs.angles) {
+    configs.angles.x += newConfigs.angles.x
+    configs.angles.y += newConfigs.angles.y
+  }
   configs = {
     ...configs,
     ...newConfigs,
@@ -105,15 +117,30 @@ const setConfig = (newConfigs, reload = false) => {
     configs.rotation[rotationChange[0]] = rotationChange[1]
   }
   if (newConfigs.resetPosition) {
-    modelMatrix = newMat4()
+    mat4.identity(modelMatrix)
     changeScale(-4.5)
-    viewMatrix = newMat4()
+    mat4.identity(viewMatrix)
     translate(viewMatrix, [0, 0, -1])
+    rotationMatrixes.x = mat4.identity(newMat4())
+    rotationMatrixes.y = mat4.identity(newMat4())
+    configs.angles.x = 0
+    configs.angles.y = 0
   }
   if (reload) {
     window.drawModel()
   }
   updateUiValues(configs)
+}
+
+const mouseRotation = () => {
+  mat4.fromXRotation(rotationMatrixes.x, configs.angles.x)
+  mat4.fromYRotation(rotationMatrixes.y, configs.angles.y)
+
+  multiply(modelMatrix, rotationMatrixes.x, modelMatrix)
+  multiply(modelMatrix, rotationMatrixes.y, modelMatrix)
+
+  configs.angles.x = 0
+  configs.angles.y = 0
 }
 
 const drawModel = (program) => () => {
@@ -145,7 +172,6 @@ const drawModel = (program) => () => {
     normal: gl.getUniformLocation(program, 'normalMatrix'),
     matrix: gl.getUniformLocation(program, 'matrix'),
   }
-
   const draw = () => {
     animationFrameId = requestAnimationFrame(draw)
     if (configs.automaticRotation) {
@@ -153,6 +179,8 @@ const drawModel = (program) => () => {
       rotateY(modelMatrix, configs.rotation.y / 100)
       rotateZ(modelMatrix, configs.rotation.z / 100)
     }
+
+    mouseRotation()
 
     multiply(mvMatrix, viewMatrix, modelMatrix)
     multiply(mvpMatrix, projectionMatrix, mvMatrix)
