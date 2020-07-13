@@ -43,7 +43,12 @@
                 onchange="setConfig({ color: this.value }, true)"
                 uk-tooltip="color picker"
               /></li>
-              <li><a onclick="setConfig({ color: null }, true)">random color</a></li>
+              <li><a
+                onclick="setConfig({ color: null, colorByTriangle: false }, true)"
+              >random color</a></li>
+              <li><a
+                onclick="setConfig({ color: null, colorByTriangle: true }, true)"
+              >random color by triangle</a></li>
               <li class="uk-nav-divider"></li>
               <li><a onclick="setConfig({ color: '#ff0000' }, true)">red</a></li>
               <li><a onclick="setConfig({ color: '#00ff00' }, true)">green</a></li>

@@ -9,10 +9,16 @@ const convertHexToRGB = (hex) => {
   return [r/255, g/255, b/255]
 }
 
-export const generateColorArray = (arrayLength, vertexLength, color) => {
+export const generateColorArray = (arrayLength, vertexLength, { color, colorByTriangle }) => {
   const colorArray = []
   const colorRGB = convertHexToRGB(color)
-  for (let i = 0; i < arrayLength/vertexLength; i++) colorArray.push(...colorRGB)
+  if (!colorByTriangle) {
+    for (let i = 0; i < arrayLength/vertexLength; i++) colorArray.push(...colorRGB)
+  } else {
+    for (let i = 0; i < arrayLength/vertexLength; i++) {
+      colorArray.push(...convertHexToRGB(getRandomColor()))
+    }
+  }
 
   return colorArray
 }
@@ -34,9 +40,4 @@ export const getDefaultModels = async () => {
     cylinder,
     cone,
   }
-}
-
-export const resizeCanvasToFullscreen = (canvas) => {
-  canvas.width  = window.innerWidth
-  canvas.height = window.innerHeight
 }
