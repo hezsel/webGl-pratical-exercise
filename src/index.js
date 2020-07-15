@@ -26,7 +26,7 @@ import {
   updateUiValues,
   addListeners,
 } from './utils/ui.js'
-import loadModels from '../models/loader.js'
+import loadModels from './models/loader.js'
 
 const gl = initializeCanvas()
 
@@ -42,8 +42,8 @@ const rotationMatrixes = {
 translate(viewMatrix, [0, 0, -1])
 
 const loadShaders = async () => {
-  const vertexShaderSource = await loadResource('text', 'assets/shaders/vertex.glsl')
-  const fragmentShaderSource = await loadResource('text', 'assets/shaders/fragment.glsl')
+  const vertexShaderSource = await loadResource('text', 'src/shaders/vertex.glsl')
+  const fragmentShaderSource = await loadResource('text', 'src/shaders/fragment.glsl')
 
   const vertexShader = createShader(gl, 'VERTEX_SHADER', vertexShaderSource)
   const fragmentShader = createShader(gl, 'FRAGMENT_SHADER', fragmentShaderSource)

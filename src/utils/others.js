@@ -29,10 +29,10 @@ export const loadResource = (type, path) => fetch(path)
   })
 
 export const getDefaultModels = async () => {
-  const cube = await loadResource('json', 'assets/models/cube.json')
-  const sphere = await loadResource('json', 'assets/models/sphere.json')
-  const cylinder = await loadResource('json', 'assets/models/cylinder.json')
-  const cone = await loadResource('json', 'assets/models/cone.json')
+  const cube = await loadResource('json', 'src/models/cube.json')
+  const sphere = await loadResource('json', 'src/models/sphere.json')
+  const cylinder = await loadResource('json', 'src/models/cylinder.json')
+  const cone = await loadResource('json', 'src/models/cone.json')
 
   return {
     cube,

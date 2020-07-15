@@ -1,4 +1,4 @@
-import parseObjFile from '../js/utils/parser.js'
+import parseObjFile from './parser.js'
 
 const modelList = document.getElementById('model-list')
 
