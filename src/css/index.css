@@ -1,6 +1,6 @@
 body {
 	margin: 0;
-	background-color: #000;
+	background-color: #000000;
 	max-height: 100vh;
 }
 
@@ -18,7 +18,7 @@ div a {
 }
 
 div a:hover {
-	color: #666;
+	color: #666666;
 	text-decoration: none;
 }
 
@@ -32,11 +32,11 @@ div a:hover {
 }
 
 nav label {
-	color: #999;
+	color: #999999;
 	cursor: pointer;
 }
 
 nav label:hover {
-	color: #666;
+	color: #666666;
 	text-decoration: none;
 }

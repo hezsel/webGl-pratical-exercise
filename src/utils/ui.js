@@ -1,9 +1,3 @@
-import {
-  rotateX,
-  rotateY,
-  translate,
-} from './matrix.js'
-
 const colorPicker = document.getElementById('color-picker')
 const currentColor = document.getElementById('current-color')
 const xRotation = document.getElementById('x-rotation')
@@ -42,40 +36,39 @@ export const initializeCanvas = () => {
 }
 
 export const addListeners = (
-  { modelMatrix: model, viewMatrix: view },
+  { model, view },
   { changeScale, setConfig },
 ) => {
   document.addEventListener('keydown', (event) => {
-    if (event.keyCode == 74) rotateY(model, -0.05)
-    if (event.keyCode == 76) rotateY(model, 0.05)
-    if (event.keyCode == 75) rotateX(model, 0.05)
-    if (event.keyCode == 73) rotateX(model, -0.05)
-    if (event.keyCode == 85) rotateX(model, 0.05)
-    if (event.keyCode == 79) rotateX(model, -0.05)
+    if (event.keyCode == 74) mat4.rotateY(model, model, -0.05)
+    if (event.keyCode == 76) mat4.rotateY(model, model, 0.05)
+    if (event.keyCode == 75) mat4.rotateX(model, model, 0.05)
+    if (event.keyCode == 73) mat4.rotateX(model, model, -0.05)
+    if (event.keyCode == 85) mat4.rotateZ(model, model, 0.05)
+    if (event.keyCode == 79) mat4.rotateZ(model, model, -0.05)
 
-    if (event.keyCode == 70) translate(model, [-0.1, 0, 0])
-    if (event.keyCode == 72) translate(model, [0.1, 0, 0])
-    if (event.keyCode == 84) translate(model, [0, 0, -0.1])
-    if (event.keyCode == 71) translate(model, [0, 0, 0.1])
-    if (event.keyCode == 82) translate(model, [0, 0.1, 0])
-    if (event.keyCode == 89) translate(model, [0, -0.1, 0])
+    if (event.keyCode == 70) mat4.translate(model, model, [-0.1, 0, 0])
+    if (event.keyCode == 72) mat4.translate(model, model, [0.1, 0, 0])
+    if (event.keyCode == 84) mat4.translate(model, model, [0, 0, -0.1])
+    if (event.keyCode == 71) mat4.translate(model, model, [0, 0, 0.1])
+    if (event.keyCode == 82) mat4.translate(model, model, [0, 0.1, 0])
+    if (event.keyCode == 89) mat4.translate(model, model, [0, -0.1, 0])
 
-    if (event.keyCode == 65) translate(view, [-0.1, 0, 0])
-    if (event.keyCode == 68) translate(view, [0.1, 0, 0])
-    if (event.keyCode == 87) translate(view, [0, 0, -0.1])
-    if (event.keyCode == 83) translate(view, [0, 0, 0.1])
-    if (event.keyCode == 81) translate(view, [0, 0.1, 0])
-    if (event.keyCode == 69) translate(view, [0, -0.1, 0])
+    if (event.keyCode == 65) mat4.translate(view, view, [-0.1, 0, 0])
+    if (event.keyCode == 68) mat4.translate(view, view, [0.1, 0, 0])
+    if (event.keyCode == 87) mat4.translate(view, view, [0, 0, -0.1])
+    if (event.keyCode == 83) mat4.translate(view, view, [0, 0, 0.1])
+    if (event.keyCode == 81) mat4.translate(view, view, [0, 0.1, 0])
+    if (event.keyCode == 69) mat4.translate(view, view, [0, -0.1, 0])
 
-    if (event.keyCode == 32) {
-      setConfig({ changeAutomaticRotation: true })
-    }
+    if (event.keyCode == 32) setConfig({ changeAnimation: true })
   })
 
   document.addEventListener('wheel', (event) => {
     if (event.deltaY > 0) changeScale(0.5)
     if (event.deltaY < 0) changeScale(- 0.5)
   })
+
   let isDraging = false
   const position = {
     x: 0,

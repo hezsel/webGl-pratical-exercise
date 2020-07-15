@@ -23,22 +23,26 @@ const loadModels = (modelsToLoad) => {
 }
 
 const addModelFile = (name, data) => {
-  const modelJson = parseObjFile(data)
-  loadModels({
-    [name]: modelJson,
-  })
-  setConfig({ model: name }, true)
+  try {
+    const modelJson = parseObjFile(data)
+    loadModels({
+      [name]: modelJson,
+    })
+    setConfig({ model: name }, true)
+  } catch (error) {
+    alert(`there was an error loading file "${name}"`)
+  }
 }
 
 document.getElementById('file').addEventListener('change', event => {
   const file = event.target.files[0]
-  if (!file.name.match(/.*\.obj$/)) {
+  if (!file.name.match(/.*\.obj$/i)) {
     alert('only ".obj" files are accepted')
     return
   }
   const reader = new FileReader()
   reader.addEventListener('load', event => {
-    const fileName = file.name.replace(/\.obj$/, '')
+    const fileName = file.name.replace(/\.obj$/i, '')
     addModelFile(fileName, event.target.result)
   })
   reader.readAsText(file)

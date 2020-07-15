@@ -60,11 +60,11 @@ export default (data) => {
     }
   }
   const result = {
-    vertices: [],
+    vertexes: [],
     normals: [],
   }
   for (let i = 0; i < f.length; i++){
-    result.vertices.push(v[f[i].v][0], v[f[i].v][1], v[f[i].v][2])
+    result.vertexes.push(v[f[i].v][0], v[f[i].v][1], v[f[i].v][2])
     result.normals.push(vn[f[i].vn][0], vn[f[i].vn][1], vn[f[i].vn][2])
   }
 

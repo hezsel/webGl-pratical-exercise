@@ -9,18 +9,19 @@ const convertHexToRGB = (hex) => {
   return [r/255, g/255, b/255]
 }
 
-export const generateColorArray = (arrayLength, vertexLength, { color, colorByTriangle }) => {
-  const colorArray = []
-  const colorRGB = convertHexToRGB(color)
-  if (!colorByTriangle) {
-    for (let i = 0; i < arrayLength/vertexLength; i++) colorArray.push(...colorRGB)
-  } else {
-    for (let i = 0; i < arrayLength/vertexLength; i++) {
-      colorArray.push(...convertHexToRGB(getRandomColor()))
-    }
+const generateArrayOfColorByIndex = (arrayLength) => {
+  const colorsArray = []
+  for (let i = 0; i < arrayLength/3; i++) {
+    colorsArray.push(convertHexToRGB(getRandomColor()))
   }
 
-  return colorArray
+  return colorsArray.flat()
+}
+
+export const generateColorArray = (arrayLength, { color, colorByVertex }) => {
+  if (colorByVertex) return generateArrayOfColorByIndex(arrayLength)
+
+  return Array(arrayLength/3).fill(convertHexToRGB(color)).flat()
 }
 
 export const loadResource = (type, path) => fetch(path)

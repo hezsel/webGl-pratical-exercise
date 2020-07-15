@@ -52,10 +52,10 @@
               </li>
               <li class="uk-nav-divider" />
               <li><a
-                onclick="setConfig({ color: null, colorByTriangle: false }, true)"
+                onclick="setConfig({ color: null, colorByVertex: false }, true)"
               >random color</a></li>
               <li><a
-                onclick="setConfig({ color: null, colorByTriangle: true }, true)"
+                onclick="setConfig({ color: null, colorByVertex: true }, true)"
               >random color by vertex</a></li>
               <li class="uk-nav-divider" />
               <li><a onclick="setConfig({ color: '#ff0000' }, true)">red</a></li>
@@ -74,10 +74,10 @@
             <ul class="uk-nav uk-navbar-dropdown-nav">
               <li class="uk-nav-header">axis rotation</li>
               <li class="uk-nav-divider" />
-              <li><a onclick="setConfig({ changeAutomaticRotation: true })">play / pause</a></li>
+              <li><a onclick="setConfig({ changeAnimation: true })">play / pause</a></li>
               <li><a
                 uk-tooltip="reset to default speed"
-                onclick="setConfig({ automaticRotation: true, rotation: { x: 1, y: 1, z: 0 } })"
+                onclick="setConfig({ animation: true, rotation: { x: 1, y: 1, z: 0 } })"
               >reset speed</a></li>
               <li class="uk-nav-divider" />
               <li>

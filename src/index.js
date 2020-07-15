@@ -6,16 +6,6 @@ import {
   saveUniform,
 } from './utils/webGl.js'
 import {
-  newMat4,
-  rotateX,
-  rotateY,
-  rotateZ,
-  scale,
-  translate,
-  createProjectionMatrix,
-  multiply,
-} from './utils/matrix.js'
-import {
   generateColorArray,
   loadResource,
   getDefaultModels,
@@ -30,16 +20,141 @@ import loadModels from './models/loader.js'
 
 const gl = initializeCanvas()
 
-let animationFrameId = null
 window.models = {}
-let configs = {}
-const modelMatrix = newMat4()
-const viewMatrix = newMat4()
-const rotationMatrixes = {
-  x: mat4.identity(newMat4()),
-  y: mat4.identity(newMat4()),
+
+let animationFrameId = null
+
+const defaultConfig = {    
+  model: 'cube',
+  color: null,
+  animation: true,
+  resetPosition: true,
+  rotation: {
+    x: 1,
+    y: 0,
+    z: 1,
+  },
+  angles: {
+    x: 0,
+    y: 0,
+  }
 }
-translate(viewMatrix, [0, 0, -1])
+
+let configs = {}
+
+const matrix = {
+  model: mat4.create(),
+  view: mat4.create(),
+  normal: mat4.create(),
+  projection: mat4.create(),
+  rotation: {
+    x: mat4.create(),
+    y: mat4.create(),
+  },
+}
+
+const changeScale = (scaleValue) => {
+  const modifier = (1 + (scaleValue/10))
+  mat4.scale(matrix.model, matrix.model, [modifier, modifier, modifier])
+  configs.scale = scaleValue
+}
+
+const resetMatrixes = () => {
+  mat4.perspective(matrix.projection, 1.25, canvas.width/canvas.height, 1e-4, 1e4)
+  mat4.identity(matrix.model)
+  mat4.identity(matrix.view)
+  mat4.translate(matrix.view, matrix.view, [0, 0, -2])
+  mat4.identity(matrix.rotation.x)
+  mat4.identity(matrix.rotation.y)
+}
+
+const adjustRotation = ({ rotationChange: [ axis, value ] }) => {
+  configs.rotation[axis] = value
+}
+
+const mouseRotation = ({ model, rotation }, { angles }) => {
+  mat4.fromXRotation(rotation.x, angles.x)
+  mat4.fromYRotation(rotation.y, angles.y)
+
+  mat4.multiply(model, rotation.x, model)
+  mat4.multiply(model, rotation.y, model)
+
+  configs.angles = {
+    x: 0,
+    y: 0,
+  }
+}
+
+const multiplyMatrixes = (mvp, mv, { model, view, projection }) => {
+  mat4.multiply(mv, view, model)
+  mat4.multiply(mvp, projection, mv)
+}
+
+const generateNormalMatrix = (normal, mv) => {
+  mat4.invert(normal, mv)
+  mat4.transpose(normal, normal)
+}
+
+const rotateModel = (model, { rotation }) => {
+  mat4.rotateX(model, model, rotation.x/100)
+  mat4.rotateY(model, model, rotation.y/100)
+  mat4.rotateZ(model, model, rotation.z/100)
+}
+
+const drawModel = (program) => () => {
+  cancelAnimationFrame(animationFrameId)
+
+  const { vertexes, normals } = window.models[configs.model]
+
+  const colors = generateColorArray(vertexes.length, configs)
+
+  const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', vertexes)
+  const colorBuffer = createBuffer(gl, 'ARRAY_BUFFER', colors)
+  const normalBuffer = createBuffer(gl, 'ARRAY_BUFFER', normals)
+
+  bindBuffer(gl, program, 'position', positionBuffer)
+  bindBuffer(gl, program, 'color', colorBuffer)
+  bindBuffer(gl, program, 'normal', normalBuffer)
+
+  const mvMatrix = mat4.create()
+  const mvpMatrix = mat4.create()
+
+  const uniformMatrixes = {
+    normal: gl.getUniformLocation(program, 'normalMatrix'),
+    matrix: gl.getUniformLocation(program, 'matrix'),
+  }
+
+  const draw = () => {
+    animationFrameId = requestAnimationFrame(draw)
+
+    if (configs.animation) rotateModel(matrix.model, configs)
+
+    mouseRotation(matrix, configs)
+    multiplyMatrixes(mvpMatrix, mvMatrix, matrix)
+    generateNormalMatrix(matrix.normal, mvMatrix)
+
+    saveUniform(gl, uniformMatrixes.matrix, mvpMatrix)
+    saveUniform(gl, uniformMatrixes.normal, matrix.normal)
+  
+    gl.drawArrays(gl.TRIANGLES, 0, vertexes.length/3)
+  }
+
+  draw()
+}
+
+const setConfig = (newConfigs, reload = false) => {
+  configs = { ...configs, ...newConfigs }
+
+  if (newConfigs.color === null) configs.color = getRandomColor()
+  if (newConfigs.color) configs.colorByVertex = false
+  if (newConfigs.scaleChange) changeScale(newConfigs.scaleChange)
+  if (newConfigs.changeAnimation) configs.animation = !configs.animation
+  if (newConfigs.rotationChange)adjustRotation(configs)
+  if (newConfigs.resetPosition) resetMatrixes()
+
+  if (reload) window.drawModel()
+  updateUiValues(configs)
+}
 
 const loadShaders = async () => {
   const vertexShaderSource = await loadResource('text', 'src/shaders/vertex.glsl')
@@ -66,135 +181,11 @@ const loadProgram = async () => {
   window.setConfig = setConfig
   window.drawModel = drawModel(program)
 
-  window.setConfig({    
-    model: 'cube',
-    color: null,
-    automaticRotation: true,
-    resetPosition: true,
-    rotation: {
-      x: 1,
-      y: 0,
-      z: 1,
-    },
-    angles: {
-      x: 0,
-      y: 0,
-    }
-  })
+  window.setConfig(defaultConfig)
 
   window.drawModel()
 }
 
-const changeScale = (scaleValue) => {
-  const modifier = (1 + (scaleValue/10))
-  scale(modelMatrix, modifier)
-  configs.scale = scaleValue
-}
-
-const setConfig = (newConfigs, reload = false) => {
-  if (newConfigs.angles && configs.angles) {
-    configs.angles.x += newConfigs.angles.x
-    configs.angles.y += newConfigs.angles.y
-  }
-  configs = {
-    ...configs,
-    ...newConfigs,
-  }
-  if (newConfigs.color === null) {
-    configs.color = getRandomColor()
-  }
-  if (newConfigs.color) {
-    configs.colorByTriangle = false
-  }
-  if (newConfigs.scaleChange) {
-    changeScale(newConfigs.scaleChange)
-  }
-  if (newConfigs.changeAutomaticRotation) {
-    configs.automaticRotation = !configs.automaticRotation 
-  }
-  const rotationChange = newConfigs.rotationChange
-  if (rotationChange) {
-    configs.rotation[rotationChange[0]] = rotationChange[1]
-  }
-  if (newConfigs.resetPosition) {
-    mat4.identity(modelMatrix)
-    changeScale(-4.5)
-    mat4.identity(viewMatrix)
-    translate(viewMatrix, [0, 0, -1])
-    rotationMatrixes.x = mat4.identity(newMat4())
-    rotationMatrixes.y = mat4.identity(newMat4())
-    configs.angles.x = 0
-    configs.angles.y = 0
-  }
-  if (reload) {
-    window.drawModel()
-  }
-  updateUiValues(configs)
-}
-
-const mouseRotation = () => {
-  mat4.fromXRotation(rotationMatrixes.x, configs.angles.x)
-  mat4.fromYRotation(rotationMatrixes.y, configs.angles.y)
-
-  multiply(modelMatrix, rotationMatrixes.x, modelMatrix)
-  multiply(modelMatrix, rotationMatrixes.y, modelMatrix)
-
-  configs.angles.x = 0
-  configs.angles.y = 0
-}
-
-const drawModel = (program) => () => {
-  cancelAnimationFrame(animationFrameId)
-
-  const { vertices, normals } = window.models[configs.model]
-
-  const color = generateColorArray(vertices.length, 3, configs)
-
-  const positionBuffer = createBuffer(gl, 'ARRAY_BUFFER', vertices)
-  const colorBuffer = createBuffer(gl, 'ARRAY_BUFFER', color)
-  const normalBuffer = createBuffer(gl, 'ARRAY_BUFFER', normals)
-
-  bindBuffer(gl, program, 'position', positionBuffer)
-  bindBuffer(gl, program, 'color', colorBuffer)
-  bindBuffer(gl, program, 'normal', normalBuffer)
-
-  const projectionMatrix = createProjectionMatrix(
-    1.25,
-    canvas.width/canvas.height,
-    1e-4, 
-    1e4,
-  )
-  const normalMatrix = newMat4()
-  const mvMatrix = newMat4()
-  const mvpMatrix = newMat4()
-
-  const uniformMatrixes = {
-    normal: gl.getUniformLocation(program, 'normalMatrix'),
-    matrix: gl.getUniformLocation(program, 'matrix'),
-  }
-  const draw = () => {
-    animationFrameId = requestAnimationFrame(draw)
-    if (configs.automaticRotation) {
-      rotateX(modelMatrix, configs.rotation.x / 100)
-      rotateY(modelMatrix, configs.rotation.y / 100)
-      rotateZ(modelMatrix, configs.rotation.z / 100)
-    }
-
-    mouseRotation()
-
-    multiply(mvMatrix, viewMatrix, modelMatrix)
-    multiply(mvpMatrix, projectionMatrix, mvMatrix)
-
-    mat4.invert(normalMatrix, mvMatrix)
-    mat4.transpose(normalMatrix, normalMatrix)
-
-    saveUniform(gl, uniformMatrixes.matrix, mvpMatrix)
-    saveUniform(gl, uniformMatrixes.normal, normalMatrix)
-  
-    gl.drawArrays(gl.TRIANGLES, 0, vertices.length/3)
-  }
-  draw()
-}
 
 loadProgram()
-addListeners({ modelMatrix, viewMatrix }, { changeScale, setConfig })
+addListeners(matrix, { changeScale, setConfig })
