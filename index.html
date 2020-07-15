@@ -11,49 +11,57 @@
     <div class="uk-navbar-left">
       <ul class="uk-navbar-nav">
         <li>
-          <a>Model</a>
+          <a>model</a>
           <div class="uk-navbar-dropdown">
             <ul id="model-list" class="uk-nav uk-navbar-dropdown-nav">
+              <li class="uk-nav-header">model</li>
+              <li class="uk-nav-divider" />
               <li>
                 <input
-                id="file"
-                name="file"
-                class="inputfile"
-                type="file"
-                accept=".obj"
+                  id="file"
+                  name="file"
+                  class="inputfile"
+                  type="file"
+                  accept=".obj"
                 />
                 <label
                   for="file"
                   uk-tooltip="must be a triangle mesh with normals"
                 >add model .obj</label>
               </li>
-              <li class="uk-nav-divider"></li>
+              <li class="uk-nav-divider" />
             </ul>
           </div>
         </li>
         <li>
-          <a>Properties</a>
+          <a>properties</a>
           <div class="uk-navbar-dropdown">
             <ul class="uk-nav uk-navbar-dropdown-nav">
-              <li class="uk-nav-header">Color</li>
-              <li><a id="current-color"></a></li>
-              <li><input
-                id="color-picker"
-                type="color"
-                onchange="setConfig({ color: this.value }, true)"
-                uk-tooltip="color picker"
-              /></li>
+              <li class="uk-nav-header">color</li>
+              <li class="uk-nav-divider" />
+              <li class="uk-margin-small">
+                <div uk-grid>
+                  <div><input
+                      id="color-picker"
+                      type="color"
+                      onchange="setConfig({ color: this.value }, true)"
+                      uk-tooltip="color picker"
+                    /></div>
+                  <div><a id="current-color"></a></div>
+                </div>
+              </li>
+              <li class="uk-nav-divider" />
               <li><a
                 onclick="setConfig({ color: null, colorByTriangle: false }, true)"
               >random color</a></li>
               <li><a
                 onclick="setConfig({ color: null, colorByTriangle: true }, true)"
-              >random color by triangle</a></li>
-              <li class="uk-nav-divider"></li>
+              >random color by vertex</a></li>
+              <li class="uk-nav-divider" />
               <li><a onclick="setConfig({ color: '#ff0000' }, true)">red</a></li>
               <li><a onclick="setConfig({ color: '#00ff00' }, true)">green</a></li>
               <li><a onclick="setConfig({ color: '#0000ff' }, true)">blue</a></li>
-              <li class="uk-nav-divider"></li>
+              <li class="uk-nav-divider" />
               <li class="uk-nav-header">Scale</li>
               <li><a onclick="setConfig({ scaleChange: -1 })">shrink</a></li>
               <li><a onclick="setConfig({ scaleChange: 1 })">expand</a></li>
@@ -61,18 +69,17 @@
           </div>
         </li>
         <li>
-          <a>Animation</a>
+          <a>animation</a>
           <div class="uk-navbar-dropdown">
             <ul class="uk-nav uk-navbar-dropdown-nav">
-              <li><a onclick="setConfig({ automaticRotation: true })">play</a></li>
-              <li><a onclick="setConfig({ automaticRotation: false })">pause</a></li>
+              <li class="uk-nav-header">axis rotation</li>
+              <li class="uk-nav-divider" />
+              <li><a onclick="setConfig({ changeAutomaticRotation: true })">play / pause</a></li>
               <li><a
                 uk-tooltip="reset to default speed"
                 onclick="setConfig({ automaticRotation: true, rotation: { x: 1, y: 1, z: 0 } })"
-              >
-                reset animation
-              </a></li>
-              <li class="uk-nav-divider"></li>
+              >reset speed</a></li>
+              <li class="uk-nav-divider" />
               <li>
                 <div class="uk-child-width-expand@s uk-text-center" uk-grid>
                   <div class="uk-margin">
@@ -86,7 +93,7 @@
                       max="10"
                       step="1"
                       onchange="setConfig({ rotationChange: ['x', this.value] })"
-                    >
+                    />
                   </div>
                 </div>
               </li>
@@ -103,7 +110,7 @@
                       max="10"
                       step="1"
                       onchange="setConfig({ rotationChange: ['y', this.value] })"
-                    >
+                    />
                   </div>
                 </div>
               </li>
@@ -120,7 +127,7 @@
                       max="10"
                       step="1"
                       onchange="setConfig({ rotationChange: ['z', this.value] })"
-                    >
+                    />
                   </div>
                 </div>
               </li>
@@ -131,7 +138,7 @@
           <a
             uk-tooltip="reset model and view position"
             onclick="setConfig({ resetPosition: true })"
-          > Reset Position</a>
+          >reset Position</a>
         </li>
       </ul>
     </div>
